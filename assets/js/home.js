@@ -18,8 +18,6 @@ $('#new-g').innerHTML=nw.map(card).join('');
 const hot=v.filter(p=>p.s>0&&!isOut(p)).slice(0,8);
 $('#hot-sec').hidden=!hot.length;$('#hot-t').textContent=t('hot');$('#hot-a').textContent=L2('عرض الكل','View all');$('#hot-a').href='shop.html?cat=HOT';
 $('#hot-g').innerHTML=hot.map(card).join('');
-/* مميزات */
-$('#perks').innerHTML=[['💵',L2('الدفع عند الاستلام','Cash on delivery'),L2('افحص الطلب قبل ما تدفع','Inspect before you pay')],['🚚',L2('شحن لكل مصر','Shipping across Egypt'),L2('لكل المحافظات','All governorates')],['🔁',L2('استبدال خلال 14 يوم','Exchange in 14 days'),L2('حسب سياسة الاستبدال','See our policy')]].map(x=>`<div class="perk"><i>${x[0]}</i><div><b>${x[1]}</b><small>${x[2]}</small></div></div>`).join('');
 /* دعوة للتواصل */
 const wa=(S.cfg.wa||'').replace(/\D/g,'');
 $('#cta').hidden=!wa;

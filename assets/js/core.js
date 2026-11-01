@@ -57,8 +57,8 @@ const cst=s=>(CST[s]||CST.new)[lang=='ar'?0:1];
 const isAdm=u=>!!u&&u.email==ADMIN_EMAIL;
 const safeLink=u=>/^(https?:\/\/|[\w./-]+\.html)/i.test(u||'')?esc(u):'';
 const baseUrl=()=>location.origin+location.pathname.replace(/[^/]*$/,'');
-function openPanel(id){const o=$('#ov'),e=$(id);if(o)o.classList.add('on');if(e)e.classList.add('on')}
-const closeAll=()=>document.querySelectorAll('.ov.on,.dr.on,.mod.on').forEach(e=>e.classList.remove('on'));
+function openPanel(id){const o=$('#ov'),e=$(id);if(o)o.classList.add('on');if(e)e.classList.add('on');document.documentElement.classList.add('lk')}
+function closeAll(){document.querySelectorAll('.ov.on,.dr.on,.mod.on').forEach(e=>e.classList.remove('on'));closePop();document.documentElement.classList.remove('lk')}
 function annRender(){const el=$('#ann');const L=String(tr(S.cfg.anns)||'').split('\n').map(x=>x.trim()).filter(Boolean);if(!L.length){el.style.display='none';return}el.style.display='';
 const k=L.join('|');if(el.dataset.k==k)return;el.dataset.k=k;const one=L.map(x=>`<span class="it">${esc(x)}</span>`).join('');
 let reps=1;const chars=L.join('').length+L.length*6;reps=Math.max(1,Math.ceil(120/chars));const half=one.repeat(reps);
@@ -147,7 +147,7 @@ updBadges();window.onNotifs&&onNotifs()}
 
 /* ---------- الشارات ---------- */
 function updBadges(){const set=(id,n)=>{const e=$(id);if(e){e.textContent=n>99?'99+':n;e.hidden=!n}};
-set('#cn',cartCount());set('#fcn',FAV.length);const u=nfUnread();set('#nbn',u);const nb=$('#nb');if(nb)nb.classList.toggle('ring',u>0)}
+set('#cn',cartCount());set('#fcn',FAV.length);const u=nfUnread();set('#nbn',u);const nb=$('#nb');if(nb)nb.classList.toggle('ring',u>0);drRefresh()}
 
 /* ---------- الهيدر والفوتر والقائمة ---------- */
 const ICN={
@@ -158,9 +158,10 @@ cart:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="curren
 let ACTIVE='',PAGE=null,taps=0,tt;
 function mountChrome(){const R=document.documentElement;R.lang=lang;R.dir=lang=='ar'?'rtl':'ltr';
 const hd=$('#hd');
-if(hd)hd.innerHTML=`<div class="hl"><button class="ib" id="mb" aria-label="${L2('القائمة','Menu')}">☰</button><button class="ib l hide-s" id="lb">${lang=='ar'?'EN':'عربي'}</button></div><a class="logo" href="index.html" id="lg" aria-label="El Shenawy Mens Wear"><b>EL SHENAWY</b><small>MENS WEAR</small></a><div class="hr"><a class="ib" id="nb" href="notifications.html" aria-label="${L2('الإشعارات','Notifications')}">${ICN.bell}<span class="badge" id="nbn" hidden>0</span></a><a class="ib" id="ab" href="account.html" aria-label="${L2('حسابي','Account')}">${ICN.user}</a><a class="ib" id="fb2" href="wishlist.html" aria-label="${L2('المفضلة','Wishlist')}">${ICN.heart}<span class="badge" id="fcn" hidden>0</span></a><a class="ib" id="cb" href="cart.html" aria-label="${L2('السلة','Cart')}">${ICN.cart}<span class="badge" id="cn" hidden>0</span></a></div>`;
+if(hd)hd.innerHTML=`<div class="hl"><button class="ib" id="mb" aria-label="${L2('القائمة','Menu')}">☰</button><button class="ib l hide-s" id="lb">${lang=='ar'?'EN':'عربي'}</button></div><a class="logo" href="index.html" id="lg" aria-label="El Shenawy Mens Wear"><b>EL SHENAWY</b><small>MENS WEAR</small></a><div class="hr"><a class="ib" id="nb" href="notifications.html" aria-haspopup="true" aria-expanded="false" aria-label="${L2('الإشعارات','Notifications')}">${ICN.bell}<span class="badge" id="nbn" hidden>0</span></a><a class="ib" id="ab" href="account.html" aria-label="${L2('حسابي','Account')}">${ICN.user}</a><a class="ib" id="fb2" href="wishlist.html" aria-label="${L2('المفضلة','Wishlist')}">${ICN.heart}<span class="badge" id="fcn" hidden>0</span></a><a class="ib" id="cb" href="cart.html" aria-label="${L2('السلة','Cart')}">${ICN.cart}<span class="badge" id="cn" hidden>0</span></a></div>`;
 if($('#ann'))annRender();
 const ft=$('#ft');if(ft)ft.innerHTML=footerHtml();
+if($('#hd')&&!$('#cartdr'))document.body.insertAdjacentHTML('beforeend','<aside class="dr sdr" id="cartdr" role="dialog" aria-modal="true"></aside><aside class="dr sdr" id="favdr" role="dialog" aria-modal="true"></aside><div class="pop" id="nfpop" role="dialog"></div>');
 if(!$('#ov'))document.body.insertAdjacentHTML('beforeend','<div class="ov" id="ov"></div><aside class="dr" id="menu" role="dialog" aria-modal="true"></aside><div class="mod" id="sheet" role="dialog" aria-modal="true"></div><div class="toast" id="toast" role="status"></div>');
 if($('#hd')){$('#menu').innerHTML=menuHtml();
  if(!$('#wab')){document.body.insertAdjacentHTML('beforeend','<a class="wab" id="wab" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" hidden><svg viewBox="0 0 24 24" width="28" height="28" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.700 6.700 0 0 1-3.300-2.900c-.2-.4.2-.4.7-1.300.1-.2 0-.3 0-.5l-.8-1.800c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.200s1 2.600 1.100 2.800c.1.2 1.900 2.900 4.600 4 1.700.7 2.400.8 3.200.6.5-.1 1.500-.6 1.700-1.200.2-.6.2-1.100.2-1.200-.1-.1-.2-.2-.4-.3z"/></svg></a>')}
@@ -188,6 +189,17 @@ const setTitle=s=>{document.title=(s?s+' | ':'')+'El Shenawy Mens Wear'};
 
 /* ---------- مستمعات عامة ---------- */
 document.addEventListener('click',e=>{const T=e.target;let el;
+if(!T.closest('#nfpop')&&!T.closest('#nb'))closePop();
+const plain=!(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button);
+if(plain){
+ if(T.closest('#cb')&&ACTIVE!='cart'){e.preventDefault();openCartDr();return}
+ if(T.closest('#fb2')&&ACTIVE!='wishlist'){e.preventDefault();openFavDr();return}
+ if(T.closest('#nb')&&ACTIVE!='notifications'){e.preventDefault();togglePop();return}
+ if(el=T.closest('#menu a.row')){const h=el.getAttribute('href');if(h=='cart.html'&&ACTIVE!='cart'){e.preventDefault();openCartDr();return}if(h=='wishlist.html'&&ACTIVE!='wishlist'){e.preventDefault();openFavDr();return}}}
+if(el=T.closest('[data-dq]')){const[k,d]=el.dataset.dq.split('|').map(Number),it=cart[k];if(it){it.q+=d;if(it.q<1)cart.splice(k,1);cartSave()}return}
+if(el=T.closest('[data-drm]')){cart.splice(+el.dataset.drm,1);cartSave();return}
+if(T.closest('[data-pnen]')){nfEnable().then(popDraw);return}
+if(T.closest('[data-pclr]')){nfClear();popDraw();return}
 if(T.closest('#lg')){e.preventDefault();clearTimeout(tt);taps++;
  if(taps>=10){taps=0;location.href='admin.html';return}
  tt=setTimeout(()=>{const home=/(^|\/)(index\.html)?$/.test(location.pathname);const n=taps;taps=0;if(n<10&&!home)location.href='index.html'},650);return}
@@ -210,3 +222,48 @@ if(nfPerm()=='granted')regSW();
 fetchAnn();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){watchOrders();fetchAnn()}});
 setInterval(()=>{if(!document.hidden){watchOrders();fetchAnn()}},90000);
+
+/* =====================================================================
+   لوحات جانبية (السلة + المفضلة) وصندوق الإشعارات الصغير
+   ===================================================================== */
+function drHead(title,sub){return `<div class="dh"><div><h2>${title}</h2>${sub?`<small>${sub}</small>`:''}</div><button class="x" data-close aria-label="${L2('إغلاق','Close')}">×</button></div>`}
+function setDr(el,h){const b=el.querySelector('.db'),y=b?b.scrollTop:0;el.innerHTML=h;const n=el.querySelector('.db');if(n)n.scrollTop=y}
+
+function cartDrHtml(){const T=totals();
+if(!T.L.length)return drHead(t('cart'))+`<div class="db"><div class="dempty"><h3>${t('empty')}</h3><p>${L2('ضيف حاجة من المتجر وابدأ طلبك.','Add something from the shop to get started.')}</p><a class="btn dark" href="shop.html">${L2('تسوق الآن','Shop now')}</a></div></div>`;
+const items=T.L.map(({i,p})=>{const k=cart.indexOf(i);return `<div class="ci"><a href="product.html?id=${p.id}">${ph(p,i.col)}</a><div class="cib"><a href="product.html?id=${p.id}"><b>${esc(tr(p.n))}</b></a><small>${esc(i.col||'')}${i.col&&i.size?' / ':''}${esc(i.size||'')}</small><div class="cir"><div class="qb"><button data-dq="${k}|-1" aria-label="-">−</button><span>${i.q}</span><button data-dq="${k}|1" aria-label="+">+</button></div><span class="cip">${money(price(p)*i.q)}</span></div></div><button class="rmx" data-drm="${k}" aria-label="${L2('حذف','Remove')}">×</button></div>`}).join('');
+let h='';
+if(S.cfg.b2g1&&T.units%3==2)h+=`<div class="hint">${t('hint21')}</div>`;
+if(+S.cfg.free>0&&T.after<+S.cfg.free)h+=`<div class="hint">${t('hintfree').replace('{x}',money(+S.cfg.free-T.after))}</div>`;
+return drHead(t('cart'),cartCount()+' '+L2('قطعة','items'))+`<div class="db">${items}</div><div class="df">${h}<div class="row2"><span>${t('sub')}</span><span>${money(T.sub)}</span></div>${T.free?`<div class="row2 gr"><span>${t('gift')}</span><span>-${money(T.free)}</span></div>`:''}<div class="row2 tt"><b>${t('total')}</b><b>${money(T.after)}</b></div><small>${L2('الشحن بيتحسب في الخطوة الجاية حسب المحافظة.','Shipping is calculated at checkout.')}</small><a class="btn dark red" href="cart.html">${L2('إتمام الطلب','Checkout')}</a></div>`}
+
+function favDrHtml(){const ps=FAV.map(i=>S.prods.find(p=>p.id==i)).filter(p=>p&&!p.hide);
+if(!ps.length)return drHead(L2('المفضلة','Wishlist'))+`<div class="db"><div class="dempty"><h3>${L2('لسه ما حفظتش حاجة','Nothing saved yet')}</h3><p>${L2('اضغط على القلب في أي منتج وهيتحفظ هنا.','Tap the heart on any product to save it here.')}</p><a class="btn dark" href="shop.html">${L2('تصفح المتجر','Browse the shop')}</a></div></div>`;
+const items=ps.map(p=>`<div class="ci"><a href="product.html?id=${p.id}">${ph(p)}</a><div class="cib"><a href="product.html?id=${p.id}"><b>${esc(tr(p.n))}</b></a>${isOut(p)?`<small>${t('so')}</small>`:''}<div class="cir"><span class="cip">${pr(p)}</span></div></div><button class="rmx" data-fv="${p.id}" aria-label="${L2('إزالة من المفضلة','Remove')}">×</button></div>`).join('');
+return drHead(L2('المفضلة','Wishlist'),ps.length+' '+L2('منتج','items'))+`<div class="db">${items}</div><div class="df"><a class="btn dark" href="wishlist.html">${L2('عرض كل المفضلة','View all')}</a></div>`}
+
+function drRefresh(){const c=$('#cartdr'),f=$('#favdr');
+if(c&&c.classList.contains('on'))setDr(c,cartDrHtml());
+if(f&&f.classList.contains('on'))setDr(f,favDrHtml())}
+function openCartDr(){closeAll();const e=$('#cartdr');if(!e)return;setDr(e,cartDrHtml());openPanel('#cartdr')}
+function openFavDr(){closeAll();const e=$('#favdr');if(!e)return;setDr(e,favDrHtml());openPanel('#favdr')}
+
+/* ---------- صندوق الإشعارات ---------- */
+const NF_IC={new:'🧾',confirmed:'✅',shipped:'🚚',delivered:'📦',cancelled:'✖️'};
+let POPSNAP=null;
+const nfWhenS=t=>{try{return new Date(t).toLocaleString(lang=='ar'?'ar-EG':'en-GB',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}catch(e){return''}};
+function popHtml(){const all=nfAll(),f=LS.get('es_nfirst',0),r=POPSNAP||nfReadSet(),perm=nfPerm();
+const un=n=>!r.has(n.id)&&(n.kind!='ann'||n.t>=f);
+const rows=all.slice(0,6).map(n=>{const x=nfText(n),u=un(n),href=n.kind=='order'?x.url:safeLink(x.url);
+const inner=`<span class="pic" aria-hidden="true">${n.kind=='order'?(NF_IC[n.st]||'🔔'):'📢'}</span><span class="ptx"><b>${esc(x.title)}</b>${x.body?`<span>${esc(x.body)}</span>`:''}<time>${esc(nfWhenS(n.t))}</time></span>${u?'<i class="dot"></i>':''}`;
+return href?`<a class="pni${u?' un':''}" href="${href}">${inner}</a>`:`<div class="pni${u?' un':''}">${inner}</div>`}).join('');
+const en=perm=='default'?`<div class="pen"><span>${L2('فعّل تنبيهات المتصفح لتحديثات طلبك','Turn on browser alerts for order updates')}</span><button data-pnen>${L2('تفعيل','Enable')}</button></div>`:'';
+return `<div class="ph2"><b>${L2('الإشعارات','Notifications')}</b>${all.length?`<button data-pclr>${L2('مسح الكل','Clear all')}</button>`:''}</div>${en}<div class="pl">${rows||`<div class="pempty">${L2('مفيش إشعارات لسه','No notifications yet')}</div>`}</div><div class="pfoot"><a href="notifications.html">${L2('عرض كل الإشعارات','View all notifications')}</a></div>`}
+function placePop(){const p=$('#nfpop'),b=$('#nb');if(!p||!b)return;const r=b.getBoundingClientRect(),vw=document.documentElement.clientWidth,w=Math.min(360,vw-24);
+p.style.width=w+'px';let left=r.left+r.width/2-w/2;left=Math.max(12,Math.min(left,vw-w-12));
+p.style.left=left+'px';p.style.top=(r.bottom+8)+'px';p.style.setProperty('--ax',(r.left+r.width/2-left)+'px')}
+function popDraw(){const p=$('#nfpop');if(p&&p.classList.contains('on')){p.innerHTML=popHtml();placePop()}}
+function openPop(){closeAll();const p=$('#nfpop');if(!p)return;POPSNAP=nfReadSet();p.innerHTML=popHtml();placePop();p.classList.add('on');const b=$('#nb');b&&b.setAttribute('aria-expanded','true');nfMarkAll()}
+function closePop(){const p=$('#nfpop');if(p&&p.classList.contains('on')){p.classList.remove('on');const b=$('#nb');b&&b.setAttribute('aria-expanded','false');POPSNAP=null}}
+function togglePop(){const p=$('#nfpop');p&&p.classList.contains('on')?closePop():openPop()}
+addEventListener('resize',popDraw);addEventListener('scroll',()=>{const p=$('#nfpop');if(p&&p.classList.contains('on'))placePop()},{passive:true});

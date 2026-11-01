@@ -33,4 +33,4 @@ else if(d.c){sel.c=d.c;pdDraw()}else if(d.s){sel.s=d.s;pdDraw()}
 else if(d.q){sel.q=Math.max(1,sel.q+ +d.q);pdDraw()}
 else if('add'in d||'buy'in d){if(isOut(cur)||outC(cur,sel.c)||outS(cur,sel.s))return;addToCart(cur,sel.c,sel.s,sel.q);
  if('buy'in d){location.href='cart.html';return}
- added=true;pdDraw();toast(t('added'))}});
+ added=true;pdDraw();openCartDr()}});
