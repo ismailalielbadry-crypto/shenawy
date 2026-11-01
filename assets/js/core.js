@@ -277,3 +277,11 @@ if(!b){hd.insertAdjacentHTML('afterend','<div class="bk" id="bk"><button class="
 b.firstChild.innerHTML=BK_SVG+'<span>'+L2('رجوع','Back')+'</span>';b.firstChild.setAttribute('aria-label',L2('رجوع للصفحة السابقة','Go back'))}
 function goBack(){const thanks=!!$('#pg-th');let same=false;try{same=!!document.referrer&&new URL(document.referrer).origin==location.origin}catch(e){}
 if(!thanks&&same&&history.length>1)history.back();else location.href=thanks?'shop.html':(ACTIVE=='shop'&&!/[?&]id=/.test(location.search)?'index.html':'shop.html')}
+
+/* ---------- حماية: ما نسيبش قفل السكرول شغال بالغلط ---------- */
+const unlockIfIdle=()=>{if(document.documentElement.classList.contains('lk')&&!document.querySelector('.dr.on,.mod.on'))document.documentElement.classList.remove('lk')};
+addEventListener('pageshow',()=>{closeAll()});
+addEventListener('pagehide',()=>{closeAll()});
+document.addEventListener('touchstart',unlockIfIdle,{passive:true,capture:true});
+document.addEventListener('wheel',unlockIfIdle,{passive:true,capture:true});
+document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('.dr a[href],.mod a[href],.pop a[href]');if(a&&!e.defaultPrevented)closeAll()},true);
