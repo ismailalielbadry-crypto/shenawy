@@ -57,7 +57,7 @@ const cst=s=>(CST[s]||CST.new)[lang=='ar'?0:1];
 const isAdm=u=>!!u&&u.email==ADMIN_EMAIL;
 const safeLink=u=>/^(https?:\/\/|[\w./-]+\.html)/i.test(u||'')?esc(u):'';
 const baseUrl=()=>location.origin+location.pathname.replace(/[^/]*$/,'');
-function openPanel(id){const o=$('#ov'),e=$(id);if(o)o.classList.add('on');if(e)e.classList.add('on');document.documentElement.classList.add('lk')}
+function openPanel(id){const o=$('#ov'),e=$(id);if(o)o.classList.add('on');if(e)e.classList.add('on');document.documentElement.classList.remove('lk')}
 function closeAll(){document.querySelectorAll('.ov.on,.dr.on,.mod.on').forEach(e=>e.classList.remove('on'));closePop();document.documentElement.classList.remove('lk')}
 function annRender(){const el=$('#ann');const L=String(tr(S.cfg.anns)||'').split('\n').map(x=>x.trim()).filter(Boolean);if(!L.length){el.style.display='none';return}el.style.display='';
 const k=L.join('|');if(el.dataset.k==k)return;el.dataset.k=k;const one=L.map(x=>`<span class="it">${esc(x)}</span>`).join('');
