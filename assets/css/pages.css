@@ -175,3 +175,9 @@ a.pni:hover{background:var(--card)}.pni.un{background:var(--card)}
 .pempty{padding:28px 16px;text-align:center;color:var(--mut)}
 .pfoot{flex:none;border-top:1px solid var(--line);padding:4px}.pfoot a{display:block;padding:10px;text-align:center;font-weight:700;font-size:13px;color:inherit;text-decoration:none}
 @media(prefers-reduced-motion:reduce){.pop{transition:none}}
+
+/* ===== زرار الرجوع ===== */
+.bk{width:100%;max-width:1240px;margin-inline:auto;padding:8px 10px 0}
+.bkb{display:inline-flex;align-items:center;gap:4px;min-height:40px;padding:0 12px 0 8px;padding-inline:8px 14px;border-radius:20px;font-size:14px;font-weight:600;color:var(--fg);transition:background .15s}
+.bkb:hover{background:var(--card)}.bkb:active{transform:scale(.97)}
+html[dir=rtl] .bkb svg{transform:scaleX(-1)}

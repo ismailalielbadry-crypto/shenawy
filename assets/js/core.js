@@ -160,6 +160,7 @@ function mountChrome(){const R=document.documentElement;R.lang=lang;R.dir=lang==
 const hd=$('#hd');
 if(hd)hd.innerHTML=`<div class="hl"><button class="ib" id="mb" aria-label="${L2('القائمة','Menu')}">☰</button><button class="ib l hide-s" id="lb">${lang=='ar'?'EN':'عربي'}</button></div><a class="logo" href="index.html" id="lg" aria-label="El Shenawy Mens Wear"><b>EL SHENAWY</b><small>MENS WEAR</small></a><div class="hr"><a class="ib" id="nb" href="notifications.html" aria-haspopup="true" aria-expanded="false" aria-label="${L2('الإشعارات','Notifications')}">${ICN.bell}<span class="badge" id="nbn" hidden>0</span></a><a class="ib" id="ab" href="account.html" aria-label="${L2('حسابي','Account')}">${ICN.user}</a><a class="ib" id="fb2" href="wishlist.html" aria-label="${L2('المفضلة','Wishlist')}">${ICN.heart}<span class="badge" id="fcn" hidden>0</span></a><a class="ib" id="cb" href="cart.html" aria-label="${L2('السلة','Cart')}">${ICN.cart}<span class="badge" id="cn" hidden>0</span></a></div>`;
 if($('#ann'))annRender();
+backBar();
 const ft=$('#ft');if(ft)ft.innerHTML=footerHtml();
 if($('#hd')&&!$('#cartdr'))document.body.insertAdjacentHTML('beforeend','<aside class="dr sdr" id="cartdr" role="dialog" aria-modal="true"></aside><aside class="dr sdr" id="favdr" role="dialog" aria-modal="true"></aside><div class="pop" id="nfpop" role="dialog"></div>');
 if(!$('#ov'))document.body.insertAdjacentHTML('beforeend','<div class="ov" id="ov"></div><aside class="dr" id="menu" role="dialog" aria-modal="true"></aside><div class="mod" id="sheet" role="dialog" aria-modal="true"></div><div class="toast" id="toast" role="status"></div>');
@@ -203,6 +204,7 @@ if(T.closest('[data-pclr]')){nfClear();popDraw();return}
 if(T.closest('#lg')){e.preventDefault();clearTimeout(tt);taps++;
  if(taps>=10){taps=0;location.href='admin.html';return}
  tt=setTimeout(()=>{const home=/(^|\/)(index\.html)?$/.test(location.pathname);const n=taps;taps=0;if(n<10&&!home)location.href='index.html'},650);return}
+if(el=T.closest('[data-back]')){goBack();return}
 if(T.closest('#mb')){openPanel('#menu');return}
 if(T.closest('#lb')||T.closest('[data-lang]')){setLang(lang=='ar'?'en':'ar');return}
 if(T.closest('.ov')||T.closest('[data-close]')){closeAll();return}
@@ -267,3 +269,11 @@ function openPop(){closeAll();const p=$('#nfpop');if(!p)return;POPSNAP=nfReadSet
 function closePop(){const p=$('#nfpop');if(p&&p.classList.contains('on')){p.classList.remove('on');const b=$('#nb');b&&b.setAttribute('aria-expanded','false');POPSNAP=null}}
 function togglePop(){const p=$('#nfpop');p&&p.classList.contains('on')?closePop():openPop()}
 addEventListener('resize',popDraw);addEventListener('scroll',()=>{const p=$('#nfpop');if(p&&p.classList.contains('on'))placePop()},{passive:true});
+
+/* ---------- زرار الرجوع (كل الصفحات الداخلية) ---------- */
+const BK_SVG='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
+function backBar(){const hd=$('#hd');if(!hd||ACTIVE=='home')return;let b=$('#bk');
+if(!b){hd.insertAdjacentHTML('afterend','<div class="bk" id="bk"><button class="bkb" data-back></button></div>');b=$('#bk')}
+b.firstChild.innerHTML=BK_SVG+'<span>'+L2('رجوع','Back')+'</span>';b.firstChild.setAttribute('aria-label',L2('رجوع للصفحة السابقة','Go back'))}
+function goBack(){const thanks=!!$('#pg-th');let same=false;try{same=!!document.referrer&&new URL(document.referrer).origin==location.origin}catch(e){}
+if(!thanks&&same&&history.length>1)history.back();else location.href=thanks?'shop.html':(ACTIVE=='shop'&&!/[?&]id=/.test(location.search)?'index.html':'shop.html')}
