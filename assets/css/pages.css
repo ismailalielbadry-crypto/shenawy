@@ -1,0 +1,143 @@
+/* =====================================================================
+   El Shenawy — pages.css  (تنسيقات الصفحات المنفصلة، فوق app.css)
+   ===================================================================== */
+body{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+.pgm{flex:1 0 auto;width:100%}
+.wrap{width:100%;max-width:1240px;margin-inline:auto;padding-inline:16px}
+a{color:inherit}
+a.btn{text-decoration:none}
+
+/* ---------- الهيدر ---------- */
+header.hd{display:grid;grid-template-columns:auto 1fr auto;gap:4px;padding-inline:max(6px,calc(var(--gut) - 16px));height:60px}
+header.hd .hl{display:flex;align-items:center}
+header.hd .hr{display:flex;justify-content:flex-end;align-items:center}
+a.ib{display:inline-flex;align-items:center;justify-content:center;color:inherit;text-decoration:none;height:48px;min-width:38px;position:relative;-webkit-tap-highlight-color:transparent}
+.ib{position:relative;min-width:38px}
+.hide-s{display:none!important}
+@media(min-width:640px){.hide-s{display:inline-flex!important;align-items:center;justify-content:center}a.ib{min-width:44px}}
+a.ib.in svg{color:var(--red)}
+.ib.ring svg{animation:bell 1.4s ease-in-out 2;transform-origin:50% 10%}
+@keyframes bell{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-6deg)}75%{transform:rotate(3deg)}}
+#nb .badge{background:var(--red)}
+@media(prefers-reduced-motion:reduce){.ib.ring svg{animation:none}}
+
+/* ---------- القائمة الجانبية ---------- */
+a.row{color:inherit;text-decoration:none}
+.row.cur{font-weight:800;color:var(--red)}
+.row.sub{padding:11px 16px;font-size:14px;color:var(--mut);letter-spacing:0}
+.row[data-lang]{width:100%}
+
+/* ---------- عناوين الصفحات ---------- */
+.pt{padding:28px 0 6px}
+.pt h1{font:700 clamp(26px,4vw,38px)/1.15 Georgia,Tahoma,serif;margin:0}
+.pt p{margin:6px 0 0;color:var(--mut)}
+.crumbs{font-size:13px;color:var(--mut);padding:16px 0 0;display:flex;gap:6px;flex-wrap:wrap}
+.crumbs a{color:inherit;text-decoration:none}.crumbs a:hover{text-decoration:underline}
+.sect{padding:34px 0 6px}
+.sh2{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:0 0 14px}
+.sh2 h2{margin:0;font:700 clamp(20px,3vw,28px)/1.2 Georgia,Tahoma,serif}
+.sh2 a{font-size:13px;color:var(--mut);white-space:nowrap}
+.empty{text-align:center;padding:54px 16px;color:var(--mut)}
+.empty .em{font-size:44px;line-height:1;display:block;margin-bottom:10px}
+.empty h2{color:var(--fg);margin:0 0 6px;font-size:20px}
+.empty .btn{margin-top:16px;width:auto;display:inline-block}
+.card{border:1px solid var(--line);border-radius:10px;padding:16px;background:var(--bg)}
+
+/* ---------- شبكة المنتجات والكروت ---------- */
+.p{position:relative;display:block;cursor:default}
+.p a.pl{display:block;color:inherit;text-decoration:none}
+.grid.in{padding:0 0 10px;max-width:none}
+@media(min-width:1024px){.grid.in{padding:0}}
+
+/* ---------- الرئيسية ---------- */
+.hero .btn{margin-inline-end:8px}
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:640px){.tiles{grid-template-columns:repeat(3,1fr);gap:14px}}
+@media(min-width:1024px){.tiles{grid-template-columns:repeat(5,1fr)}}
+.tile{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:120px;padding:14px;border-radius:10px;overflow:hidden;text-decoration:none;color:#fff;background:var(--c,#222);isolation:isolate}
+.tile::before{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.62),rgba(0,0,0,.05) 70%);z-index:-1}
+.tile svg{position:absolute;inset-inline-end:-6px;top:6px;width:68px;height:68px;opacity:.22;z-index:-1}
+.tile b{font-size:16px;line-height:1.2}.tile small{opacity:.8;font-size:12px}
+.tile:hover{transform:translateY(-2px)}.tile{transition:transform .18s}
+.perks{display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:640px){.perks{grid-template-columns:repeat(3,1fr)}}
+.perk{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.perk i{font-style:normal;font-size:26px;line-height:1}.perk b{display:block}.perk small{color:var(--mut)}
+.cta{margin:40px 0 10px;background:var(--ink);color:var(--inv);border-radius:12px;padding:28px 22px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.cta h2{margin:0;font:700 22px/1.25 Georgia,Tahoma,serif}.cta p{margin:4px 0 0;opacity:.75}
+.cta .btn{background:#25d366;color:#fff;width:auto}
+
+/* ---------- المتجر ---------- */
+.shopbar{position:relative}
+.shopbar .sb{padding-inline:0}
+.cats{padding-inline:0;margin-inline:0;max-width:none}
+.bar{padding-inline:0;max-width:none}
+
+/* ---------- صفحة المنتج ---------- */
+.pdp{display:grid;gap:22px;padding:14px 0 10px}
+@media(min-width:900px){.pdp{grid-template-columns:minmax(0,460px) 1fr;gap:44px;padding-top:22px}}
+.pdp .gal .ph{max-width:520px}
+.pdp .th{max-width:520px}
+.pdp h1{margin:6px 0 6px;font:700 clamp(24px,3.2vw,32px)/1.2 Georgia,Tahoma,serif}
+.pdp .pri{font-size:20px}.pdp .pri s{font-size:15px}
+.pdp .acts{display:grid;gap:8px;margin-top:6px}
+@media(min-width:520px){.pdp .acts{grid-template-columns:1fr 1fr}}
+.pdp .acts .btn{margin:0}
+.pdp .qrow{display:flex;align-items:center;gap:12px;margin:0 0 14px}
+.pdp .qrow .opt{margin:0}
+.btn.ghost{background:none;color:var(--fg);border:1px solid var(--ink)}
+.stk{font-size:13px;color:var(--mut)}
+.addok{display:none;margin-top:10px;padding:10px 12px;border-radius:8px;background:#e8f6ec;color:#17622f;font-size:14px}
+.addok.on{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.addok a{font-weight:700}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .addok{background:#12301c;color:#9be0b3}}
+
+/* ---------- السلة ---------- */
+.cartpg{display:grid;gap:20px;padding:10px 0 30px}
+@media(min-width:900px){.cartpg{grid-template-columns:1.35fr 1fr;gap:34px;align-items:start}.cartpg .side{position:sticky;top:76px}}
+.cartpg .ci .ph{width:78px}
+.cartpg .ci a{color:inherit;text-decoration:none}
+.formg{display:grid;gap:8px;margin:12px 0}
+.formg label{font-size:13px;color:var(--mut);display:grid;gap:4px}
+
+/* ---------- تم الطلب ---------- */
+.done{max-width:560px;margin:0 auto;text-align:center;padding:50px 0 40px}
+.done .ck{width:68px;height:68px;border-radius:50%;background:#e8f6ec;color:#1a7f37;display:grid;place-items:center;font-size:34px;margin:0 auto 14px}
+.done .oid{display:inline-block;background:var(--card);padding:8px 16px;border-radius:8px;font-size:20px;letter-spacing:.08em;margin:6px 0 14px}
+.done .btns{display:grid;gap:8px;margin-top:18px}
+
+/* ---------- الإشعارات ---------- */
+.nwrap{max-width:720px;margin-inline:auto;width:100%;padding:0 16px}
+.nsw{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:14px 0}
+.nsw b{display:block}.nsw small{color:var(--mut)}
+.nsw .btn{width:auto;padding:10px 18px;min-height:40px}
+.nsw .ok{color:#1a7f37;font-weight:700}
+.nbar{display:flex;justify-content:space-between;align-items:center;margin:6px 0 10px;color:var(--mut);font-size:13px}
+.nbar button{text-decoration:underline;min-height:0;color:var(--fg);font-size:13px}
+.nl{display:grid;gap:8px;padding-bottom:30px}
+.ni{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:14px;text-decoration:none;color:inherit;position:relative;background:var(--bg)}
+.ni.un{background:var(--card);border-color:var(--red)}
+.ni .ic{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:20px;background:var(--card)}
+.ni.un .ic{background:var(--bg)}
+.ni .tx{flex:1;min-width:0}.ni b{display:block;font-size:15px}.ni p{margin:2px 0 4px;font-size:14px;color:var(--mut);white-space:pre-line}
+.ni time{font-size:12px;color:var(--mut)}
+.ni .dot{position:absolute;top:14px;inset-inline-end:14px;width:9px;height:9px;border-radius:50%;background:var(--red)}
+.ni:hover{border-color:var(--fg)}
+
+/* ---------- الحساب / التتبع / السياسات ---------- */
+.narrow{max-width:560px;margin-inline:auto;width:100%;padding:0 16px}
+.tpad{padding:10px 0 40px}
+.tbl{margin:10px 0}
+.tips{display:grid;gap:8px;margin-top:18px}
+.tips div{border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14px}.tips b{display:block;margin-bottom:2px}
+.myo{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.myo button{border:1px solid var(--line);border-radius:16px;padding:6px 12px;font-size:13px;min-height:36px}
+.btn.out{border:1px solid var(--line)}
+
+/* ---------- زر واتساب فوق شريط الصفحة ---------- */
+.wab{z-index:15}
+main.pgm,.pgm{padding-bottom:24px}
+.hero .hc{max-width:1240px}
+
+.shopbar .sd{inset-inline:0}
+.sd a.sr{text-decoration:none;color:inherit}

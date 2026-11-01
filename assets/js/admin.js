@@ -1,0 +1,108 @@
+/* =====================================================================
+   لوحة التحكم (admin.html): منتجات / إعدادات / طلبات / إشعارات
+   الدخول: ادخل admin.html مباشرة أو اضغط على اللوجو 10 مرات.
+   ===================================================================== */
+let dirty=0,tab='p',ed=null,unlocked=0,armDel=null;
+const render=()=>{};
+const fld=(l,path,v,ty)=>`<label>${l}<input data-f="${path}" value="${esc(v)}"${ty?` type="${ty}"`:''}></label>`;
+const fldT=(l,path,v,rows)=>`<label class="wide">${l}<textarea data-f="${path}" rows="${rows||4}">${esc(v)}</textarea></label>`;
+let ORD=null;const ST={new:['جديد','New'],confirmed:['تم التأكيد','Confirmed'],shipped:['تم الشحن','Shipped'],delivered:['تم التسليم','Delivered'],cancelled:['ملغي','Cancelled']};
+async function loadOrders(){ORD=null;if(db&&user){try{const q=await db.collection('orders').orderBy('t','desc').limit(100).get();ORD=q.docs.map(d=>({_id:d.id,...d.data()}))}catch(e){ORD=[];toast(t('fail')+(e.code||''))}}else ORD=[];if($('#adm').classList.contains('on'))drawAdm()}
+let OF={st:'all',q:''};
+const stTxt=k=>(ST[k]||ST.new)[lang=='ar'?0:1];
+function waMsg(o){const n=o.name||'';const m={new:['استلمنا طلبك','we received your order'],confirmed:['تم تأكيد طلبك','your order is confirmed'],shipped:['طلبك خرج للشحن وهيوصلك قريب','your order has been shipped'],delivered:['تم تسليم طلبك. شكرًا لثقتك','your order was delivered'],cancelled:['تم إلغاء طلبك','your order was cancelled']}[o.status]||['',''];
+return lang=='ar'?`أهلاً ${n}، ${m[0]} رقم ${o.id} من الشناوي مينز وير.`:`Hi ${n}, ${m[1]} (${o.id}) - El Shenawy Mens Wear.`}
+function ordList(){let l=(ORD||[]).filter(o=>(OF.st=='all'||o.status==OF.st)&&(!OF.q||((o.id||'')+' '+(o.name||'')+' '+(o.phone||'')).toLowerCase().includes(OF.q)));
+return l.length?l.map(o=>{const ph1='20'+String(o.phone||'').slice(1);return `<div style="border-bottom:1px solid var(--line);padding:12px 14px;display:grid;gap:5px;font-size:14px"><div class="oh"><span><b>${esc(o.id)}</b> <small class="mut">${esc(new Date(o.t).toLocaleString(lang=='ar'?'ar-EG':'en-GB'))}</small></span><span class="sc ${esc(o.status)}">${stTxt(o.status)}</span></div><div>${esc(o.name)} · <span dir="ltr">${esc(o.phone)}</span></div><div>${esc(o.gov)} — ${esc(o.address)}</div><div class="mut">${(o.items||[]).map(i=>`${esc(i.name)} (${esc(i.color||'-')}/${esc(i.size||'-')}) ×${esc(i.qty)}`).join('<br>')}</div><div><b>${money(o.total||0)}</b> <small>${lang=='ar'?'الشحن':'Shipping'}: ${money(o.shipping||0)}</small></div><div class="oca"><a href="tel:${esc(o.phone)}">📞 ${lang=='ar'?'اتصال':'Call'}</a><a href="https://wa.me/${esc(ph1)}?text=${encodeURIComponent(waMsg(o))}" target="_blank" rel="noopener noreferrer">💬 ${lang=='ar'?'واتساب للعميل':'WhatsApp'}</a></div><select data-ost="${esc(o._id)}">${Object.keys(ST).map(k=>`<option value="${k}"${o.status==k?' selected':''}>${stTxt(k)}</option>`).join('')}</select></div>`}).join(''):`<p class="mut" style="padding:14px">${lang=='ar'?'مفيش طلبات مطابقة':'No matching orders'}</p>`}
+function ordersHtml(){if(ORD===null)return `<p class="mut" style="padding:14px">...</p>`;const ar=lang=='ar',td=new Date().toDateString();
+const rev=ORD.filter(o=>o.status!='cancelled').reduce((a,o)=>a+(+o.total||0),0),nw=ORD.filter(o=>o.status=='new').length,today=ORD.filter(o=>new Date(o.t).toDateString()==td).length;
+return `<div class="ost"><div><b>${ORD.length}</b><small>${ar?'كل الطلبات':'Orders'}</small></div><div><b>${nw}</b><small>${ar?'طلبات جديدة':'New'}</small></div><div><b>${today}</b><small>${ar?'طلبات النهاردة':'Today'}</small></div><div><b>${money(rev)}</b><small>${ar?'إجمالي المبيعات':'Revenue'}</small></div></div><div style="padding:0 14px 10px;display:flex;gap:8px"><input id="osq" placeholder="${ar?'بحث بالرقم أو الاسم أو الموبايل':'Search id, name or phone'}" value="${esc(OF.q)}"><button class="btn dark" style="width:auto;padding:8px 14px" data-refresh aria-label="Refresh">↻</button><button class="btn dark" style="width:auto;padding:8px 14px;white-space:nowrap" data-oexp>CSV</button></div><div class="ofl">${['all',...Object.keys(ST)].map(k=>`<button class="${OF.st==k?'on':''}" data-ofl="${k}">${k=='all'?(ar?'الكل':'All'):stTxt(k)}</button>`).join('')}</div><div id="olist">${ordList()}</div>`}
+function exportCsv(){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const rows=[['id','date','name','phone','governorate','address','items','shipping','total','status','email']].concat((ORD||[]).map(o=>[o.id,new Date(o.t).toISOString().slice(0,16).replace('T',' '),o.name,o.phone,o.gov,o.address,(o.items||[]).map(i=>`${i.name} (${i.color||'-'}/${i.size||'-'}) x${i.qty}`).join(' | '),o.shipping||0,o.total||0,o.status,o.email||'']));
+const b=new Blob(['﻿'+rows.map(r=>r.map(q).join(',')).join('\n')],{type:'text/csv;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='orders-'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000)}
+const pvUpd=p=>{const e=$('#pvx');if(e&&p)e.innerHTML=`<div style="width:110px;flex:none">${ph(p,0,tags(p))}</div><div><small>${t('pvc')}</small><br><b>${esc(tr(p.n))}</b><br>${pr(p)}</div>`};
+function drawAdm(){const a=$('#adm');let b='';
+if(unlocked&&REMOTE.state=='idle'){a.innerHTML='<p class="mut" style="padding:24px">...</p>';return}
+if(!unlocked){a.innerHTML=`<div class="ah"><b>${t('adm')}</b><button data-aclose style="color:inherit;font-size:22px" aria-label="Close">×</button></div><div class="fm"><b>${lang=='ar'?'تسجيل دخول الأدمن':'Admin sign in'}</b>${user?`<p class="hint" style="margin:0">${lang=='ar'?'الحساب الحالي مش أدمن. سجّل بحساب الأدمن.':'Current account is not admin.'}</p>`:''}<input id="em" type="email" autocomplete="username" placeholder="Email"><input id="pw" type="password" autocomplete="current-password" placeholder="${t('pw')}"><button class="btn dark" data-unlock>OK</button></div>`;return}
+if(tab=='p'&&ed==null)b=`<div style="padding:14px"><button class="btn dark" data-newp>${t('addp')}</button></div>`+S.prods.map(p=>`<div class="ar${p.hide?' hid':''}">${ph(p)}<div><b>${esc(tr(p.n))}</b><br><small>${money(price(p))}${isOut(p)?' · '+t('so'):''}</small></div><button data-hide="${p.id}" aria-label="Hide/Show">${p.hide?'🚫':'👁'}</button><button data-edit="${p.id}" aria-label="Edit">✏️</button><button data-del="${p.id}" aria-label="Delete">${armDel==p.id?'⚠️':'🗑'}</button></div>`).join('');
+else if(tab=='p'){const p=S.prods.find(x=>x.id==ed);b=`<div class="fm">${fld(t('nE'),'n.en',p.n.en)}${fld(t('nA'),'n.ar',p.n.ar)}<label>${t('ct')}<select data-f="c">${S.cats.map(c=>`<option value="${esc(c.en)}"${c.en==p.c?' selected':''}>${esc(tr(c))}</option>`).join('')}</select></label>${fld(t('pc'),'p',p.p,'number')}${fld(t('sl'),'s',p.s||0,'number')}${fld(t('cls'),'cl',p.cl)}${fld(t('szs'),'sz',p.sz)}${fld(t('os'),'os',p.os)}${fld(t('oc'),'oc',p.oc)}<b class="wide">${t('img')}</b><div class="gl">${p.imgs.map((m,k)=>`<div class="gi">${ph(p,0,'',k)}<div class="gb"><button data-editimg="${k}" aria-label="Edit">✂️</button><button data-rmimg="${k}" aria-label="Delete">🗑</button></div></div>`).join('')}</div>${p.imgs.length<6?`<label class="wide">${t('addimg')}<input type="file" accept="image/*" id="up"></label>`:`<small class="wide">${t('maximg')}</small>`}<div class="pvr" id="pvx"></div><div class="chk"><label><input type="checkbox" data-f="hide"${p.hide?' checked':''}>${t('hid')}</label><label><input type="checkbox" data-f="out"${p.out?' checked':''}>${t('so')}</label></div><button class="btn dark" data-back>${t('done')}</button></div>`}
+else if(tab=='n')b=nHtml();
+else if(tab=='o')b=ordersHtml();
+else{const c=S.cfg;b=`<div class="fm"><b class="wide">${t('sec3')}</b>${fld(t('wa'),'cfg.wa',c.wa,'tel')}${fld('Instagram link','cfg.ig',c.ig||'','url')}${fld('Facebook link','cfg.fb',c.fb||'','url')}${fldT((lang=='ar'?'عروض الشريط العلوي (إنجليزي) - كل عرض في سطر':'Top bar offers (English) - one per line'),'cfg.anns.en',c.anns.en,5)}${fldT((lang=='ar'?'عروض الشريط العلوي (عربي) - كل عرض في سطر':'Top bar offers (Arabic) - one per line'),'cfg.anns.ar',c.anns.ar,5)}${fld(t('tE'),'cfg.ht.en',c.ht.en)}${fld(t('tA'),'cfg.ht.ar',c.ht.ar)}${fld(t('pE'),'cfg.hp.en',c.hp.en)}${fld(t('pA'),'cfg.hp.ar',c.hp.ar)}<b class="wide">${t('sec1')}</b><div class="chk"><label><input type="checkbox" data-f="cfg.b2g1"${c.b2g1?' checked':''}>${t('b2g')}</label></div>${fld(t('freefrom'),'cfg.free',c.free,'number')}${c.zones.map((z,i)=>fld(t('zoneP')+tr(z),`cfg.zones.${i}.p`,z.p,'number')).join('')}${fldT(t('sgc'),'cfg.sg',c.sg,5)}${fldT(t('polE'),'cfg.policy.en',c.policy.en,5)}${fldT(t('polA'),'cfg.policy.ar',c.policy.ar,5)}<b class="wide">${t('sec2')}</b>${fld(t('hook'),'cfg.hook',c.hook,'url')}${fld(t('pix'),'cfg.pixel',c.pixel)}${fld(t('ga'),'cfg.ga',c.ga)}${fld('Cloudinary cloud name','cfg.cloud',c.cloud||'')}${fld('Cloudinary upload preset (unsigned)','cfg.preset',c.preset||'')}<b class="wide">${t('sec4')}</b>${S.cats.map((x,i)=>`<div class="ar" style="padding:4px 0"><div>${esc(x.en)} / ${esc(x.ar)}</div><button data-delc="${i}" aria-label="Delete">🗑</button></div>`).join('')}<input id="ce" placeholder="${t('cE')}"><input id="ca2" placeholder="${t('cA')}"><button class="btn dark" data-addc>${t('addc')}</button></div>`}
+a.innerHTML=`<div class="ah"><b>${t('adm')}</b><span><button data-alang style="color:inherit;font-size:13px;margin-inline-end:12px">${lang=='ar'?'EN':'عربي'}</button><button data-logout style="color:inherit;font-size:13px;margin-inline-end:12px">${lang=='ar'?'خروج':'Logout'}</button><button data-aclose style="color:inherit;font-size:22px" aria-label="Close">×</button></span></div><div class="tabs"><button class="${tab=='p'?'on':''}" data-tab="p">${t('pr')}</button><button class="${tab=='s'?'on':''}" data-tab="s">${t('st')}</button><button class="${tab=='o'?'on':''}" data-tab="o">${lang=='ar'?'الطلبات':'Orders'}</button><button class="${tab=='n'?'on':''}" data-tab="n">🔔 ${lang=='ar'?'الإشعارات':'Notifications'}</button></div>${b}<div class="sv"><button class="btn dark" data-save>${t('save')}${dirty?' •':''}</button><button class="btn out" data-aclose style="border:1px solid var(--line)">${t('cls2')}</button></div>`;
+if(tab=='p'&&ed!=null)pvUpd(S.prods.find(x=>x.id==ed))}
+const setp=(o,path,v)=>{const k=path.split('.');while(k.length>1)o=o[k.shift()];o[k[0]]=v};
+async function save(){if(!db||!user)return toast(lang=='ar'?'سجّل دخول الأدمن الأول':'Sign in first');
+if(REMOTE.state!='ok')return toast(lang=='ar'?'تعذر تحميل بيانات المتجر الحالية. حدّث الصفحة قبل الحفظ عشان ما نمسحش بياناتك.':'Could not load current store data. Reload before saving.');
+try{const o=JSON.parse(JSON.stringify({cfg:S.cfg,cats:S.cats,prods:S.prods}));delete o.cfg.pw;await db.collection('store').doc('main').set(o);dirty=0;toast(lang=='ar'?'تم الحفظ':'Saved');drawAdm()}catch(e){toast(t('fail')+(e.code||e.message||''))}}
+const nid=()=>Math.max(0,...S.prods.map(p=>p.id))+1;
+document.addEventListener('input',e=>{const id=e.target.id;
+if(id=='osq'){OF.q=e.target.value.trim().toLowerCase();const l=$('#olist');if(l)l.innerHTML=ordList();return}
+const f=e.target.dataset.f;if(!f)return;const p=ed!=null?S.prods.find(x=>x.id==ed):null,v=e.target.type=='checkbox'?e.target.checked:e.target.type=='number'?+e.target.value:e.target.value;
+setp(f.startsWith('cfg')?S:p,f,v);dirty=1;render();if(p)pvUpd(p)});
+document.addEventListener('change',e=>{
+if(e.target.dataset&&e.target.dataset.ost){const id=e.target.dataset.ost,v=e.target.value;const bt=db.batch();bt.update(db.collection('orders').doc(id),{status:v});bt.set(db.collection('track').doc(id),{status:v},{merge:true});bt.commit().then(()=>{const o=ORD&&ORD.find(x=>x._id==id);if(o)o.status=v;toast('✓')}).catch(x=>toast(t('fail')+(x.code||'')));return}
+if(e.target.id!='up'||!e.target.files[0])return;openCrop(URL.createObjectURL(e.target.files[0]),-1);e.target.value=''});
+let CR=null,ei=-1;const VW=270,VH=360;
+function openCrop(src,idx){ei=idx;const im=new Image();im.crossOrigin='anonymous';im.onload=()=>{CR={im,x:0,y:0,z:1,r:0,b:100,c:100,f:0};cropUI()};im.onerror=()=>toast(t('reup'));im.src=src}
+function dims(){const{im,r}=CR;return r%2?[im.height,im.width]:[im.width,im.height]}
+function clamp(w=VW,h=VH){const[rw,rh]=dims(),k=Math.max(w/rw,h/rh)*CR.z,mx=(rw*k-w)/2,my=(rh*k-h)/2;CR.x=Math.max(-mx,Math.min(mx,CR.x));CR.y=Math.max(-my,Math.min(my,CR.y))}
+function draw(c,w,h){const x=c.getContext('2d'),{im,z,r,b,c:ct,f}=CR,k=w/VW,[rw,rh]=dims(),sc=Math.max(w/rw,h/rh)*z;x.fillStyle='#fff';x.fillRect(0,0,w,h);x.save();x.filter=`brightness(${b}%) contrast(${ct}%)`;x.translate(w/2+CR.x*k,h/2+CR.y*k);x.rotate(r*Math.PI/2);if(f)x.scale(-1,1);x.scale(sc,sc);x.drawImage(im,-im.width/2,-im.height/2);x.restore()}
+function redraw(){clamp();draw($('#cv'),VW,VH);draw($('#cv2'),96,128)}
+function cropUI(){let o=$('#crop');if(!o){o=document.createElement('div');o.id='crop';document.body.appendChild(o)}
+const p=S.prods.find(x=>x.id==ed);
+o.innerHTML=`<div class="cw"><b>${t('crop')}</b><canvas id="cv" width="${VW}" height="${VH}"></canvas><small>${t('drag')}</small><label>${t('zoom')}<input type="range" id="rz" min="1" max="4" step="0.01" value="1"></label><label>${t('bri')}<input type="range" id="rb" min="60" max="140" value="100"></label><label>${t('con')}<input type="range" id="rc" min="60" max="140" value="100"></label><div class="opt" style="margin:0"><button data-rot>↻ ${t('rot')}</button><button data-flip>⇋ ${t('flip')}</button></div><div class="pvr"><canvas id="cv2" width="96" height="128"></canvas><div><small>${t('pvc')}</small><br><b>${esc(tr(p.n))}</b><br>${pr(p)}</div></div><div class="cb"><button class="btn dark" data-capply>${t('capply')}</button><button class="btn" data-ccancel style="border:1px solid var(--line)">${t('ccancel')}</button></div></div>`;
+o.style.display='flex';const cv=$('#cv');let d=null;
+cv.onpointerdown=e=>{d=[e.clientX,e.clientY];cv.setPointerCapture(e.pointerId)};cv.onpointerup=()=>d=null;
+cv.onpointermove=e=>{if(!d)return;const k=VW/cv.clientWidth;CR.x+=(e.clientX-d[0])*k;CR.y+=(e.clientY-d[1])*k;d=[e.clientX,e.clientY];redraw()};
+o.oninput=e=>{CR.z=+$('#rz').value;CR.b=+$('#rb').value;CR.c=+$('#rc').value;redraw()};redraw()}
+async function applyCrop(){try{const out=document.createElement('canvas');out.width=900;out.height=1200;clamp();draw(out,900,1200);
+const blob=await new Promise((ok,no)=>{try{out.toBlob(b=>b?ok(b):no(new Error('export')),'image/jpeg',.88)}catch(x){no(x)}});toast(t('up'));
+const cl=(S.cfg.cloud||'').trim(),pr0=(S.cfg.preset||'').trim();if(!cl||!pr0)return toast(lang=='ar'?'سجّل بيانات Cloudinary في الإعدادات الأول':'Set Cloudinary in Settings first');
+const fd=new FormData();fd.append('file',blob,'p.jpg');fd.append('upload_preset',pr0);const rs=await fetch('https://api.cloudinary.com/v1_1/'+encodeURIComponent(cl)+'/image/upload',{method:'POST',body:fd});const r=await rs.json();if(!r.secure_url)throw new Error((r.error&&r.error.message)||'upload');
+const p=S.prods.find(x=>x.id==ed);if(ei>=0)p.imgs[ei]=r.secure_url;else if(p.imgs.length<6)p.imgs.push(r.secure_url);dirty=1;$('#crop').style.display='none';render();drawAdm()}catch(x){toast(t('fail')+(x.message||''))}}
+document.addEventListener('click',e=>{const el=e.target.closest('button,a,.ov,.p');if(!el)return;const d=el.dataset;
+if(armDel!=null&&!d.del){armDel=null;if(unlocked&&$('#adm').classList.contains('on'))drawAdm()}
+if(0){}
+else if('aclose'in d){location.href='index.html'}
+else if('alang'in d){setLang(lang=='ar'?'en':'ar')}
+else if(d.tab){tab=d.tab;ed=null;drawAdm();if(tab=='o')loadOrders();if(tab=='n')nLoad()}else if('refresh'in d){loadOrders()}else if('logout'in d){if(auth)auth.signOut()}
+else if('newp'in d){const id=nid();S.prods.unshift({id,n:{en:'New product',ar:'منتج جديد'},c:S.cats[0].en,p:500,s:0,cl:'BLACK,NAVY',sz:'M,L,XL',imgs:[],os:'',oc:'',hide:true,out:false});ed=id;dirty=1;render();drawAdm()}
+else if(d.edit){ed=+d.edit;drawAdm()}else if('back'in d){ed=null;drawAdm()}
+else if(d.hide){const p=S.prods.find(x=>x.id==d.hide);p.hide=!p.hide;dirty=1;render();drawAdm()}
+else if(d.del){if(armDel==d.del){S.prods=S.prods.filter(x=>x.id!=d.del);armDel=null;dirty=1;render();drawAdm()}else{armDel=d.del;drawAdm();toast(t('del2'))}}
+else if('addc'in d){const en=$('#ce').value.trim(),ar=$('#ca2').value.trim();if(en){S.cats.push({en,ar:ar||en});dirty=1;render();drawAdm()}}
+else if(d.delc!==undefined){S.cats.splice(+d.delc,1);dirty=1;render();drawAdm()}
+else if('unlock'in d){(async()=>{const em=$('#em').value.trim(),v=$('#pw').value;if(!auth)return toast('Firebase not loaded');try{await auth.signInWithEmailAndPassword(em,v)}catch(e){toast(t('wrong'))}})()}
+else if('rot'in d){CR.r=(CR.r+1)%4;redraw()}else if('flip'in d){CR.f=CR.f?0:1;redraw()}
+else if('capply'in d)applyCrop();else if('ccancel'in d)$('#crop').style.display='none'
+else if('editimg'in d){const p=S.prods.find(x=>x.id==ed),k=+d.editimg;openCrop(p.imgs[k],k)}
+else if('rmimg'in d){S.prods.find(x=>x.id==ed).imgs.splice(+d.rmimg,1);dirty=1;render();drawAdm()}
+else if(d.ofl){OF.st=d.ofl;drawAdm()}else if('oexp'in d)exportCsv()
+else if('nsend'in d){nSend()}else if(d.ndel){nDel(d.ndel)}
+else if('save'in d)save()});
+/* ---- إشعارات المتجر (store/notifs) ---- */
+let NADM=null;
+async function nLoad(){NADM=null;if(db){try{const d=await db.collection('store').doc('notifs').get();NADM=d.exists&&Array.isArray(d.data().items)?d.data().items:[]}catch(e){NADM=[];toast(t('fail')+(e.code||''))}}else NADM=[];if(tab=='n')drawAdm()}
+function nHtml(){const ar=lang=='ar';
+return `<div class="fm"><b class="wide">${ar?'إرسال إشعار جديد لكل العملاء':'Send a new notification to all customers'}</b>
+<label>${ar?'العنوان (عربي)':'Title (Arabic)'}<input id="nta"></label><label>${ar?'العنوان (إنجليزي)':'Title (English)'}<input id="nte" dir="ltr"></label>
+<label class="wide">${ar?'النص (عربي)':'Message (Arabic)'}<textarea id="nba" rows="3"></textarea></label><label class="wide">${ar?'النص (إنجليزي)':'Message (English)'}<textarea id="nbe" rows="3" dir="ltr"></textarea></label>
+<label class="wide">${ar?'رابط عند الضغط (اختياري، مثال: shop.html?cat=HOT)':'Link on tap (optional, e.g. shop.html?cat=HOT)'}<input id="nu" dir="ltr"></label>
+<p class="hint wide" style="margin:0">${ar?'لو كتبت لغة واحدة بس هتتنسخ للغة التانية. الإشعار بيظهر للعميل في زرار الجرس، وبينبّهه لو فعّل تنبيهات المتصفح.':'If you fill only one language it is copied to the other. Customers see it under the bell button.'}</p>
+<button class="btn dark wide" data-nsend>${ar?'إرسال الإشعار':'Send notification'}</button>
+<b class="wide">${ar?'الإشعارات المرسلة':'Sent notifications'}</b></div>
+<div id="nlist">${NADM===null?'<p class="mut" style="padding:14px">...</p>':NADM.length?NADM.map(n=>`<div class="ar"><div><b>${esc(tr(n.title))}</b><br><small>${esc(tr(n.body))}</small><br><small class="mut">${esc(new Date(n.t).toLocaleString(ar?'ar-EG':'en-GB'))}</small></div><button data-ndel="${esc(n.id)}" aria-label="Delete">🗑</button></div>`).join(''):`<p class="mut" style="padding:14px">${ar?'لسه ما بعتش أي إشعار.':'Nothing sent yet.'}</p>`}</div>`}
+async function nSend(){const v=id=>($(id).value||'').trim();let ta=v('#nta'),te=v('#nte'),ba=v('#nba'),be=v('#nbe');const u=v('#nu');
+if(!ta&&!te)return toast(lang=='ar'?'اكتب عنوان الإشعار':'Enter a title');
+if(REMOTE.state!='ok'||!db||!user)return toast(lang=='ar'?'سجّل دخول الأدمن وحدّث الصفحة':'Sign in and reload');
+if(NADM===null)await nLoad();
+ta=ta||te;te=te||ta;ba=ba||be;be=be||ba;
+if(u&&!/^(https?:\/\/|[\w./?=&%#-]+)$/i.test(u))return toast(lang=='ar'?'الرابط غير صحيح':'Invalid link');
+const it={id:'a'+Date.now().toString(36),t:Date.now(),title:{ar:ta,en:te},body:{ar:ba,en:be}};if(u)it.url=u;
+try{const items=[it,...(NADM||[])].slice(0,30);await db.collection('store').doc('notifs').set({items});NADM=items;toast(lang=='ar'?'تم إرسال الإشعار':'Sent');drawAdm()}catch(e){toast(t('fail')+(e.code||e.message||''))}}
+async function nDel(id){if(!db||!user)return;try{const items=(NADM||[]).filter(x=>x.id!=id);await db.collection('store').doc('notifs').set({items});NADM=items;drawAdm()}catch(e){toast(t('fail')+(e.code||''))}}
+
+/* ---- ربط الصفحة ---- */
+onUser(u=>{unlocked=isAdm(u)?1:0;drawAdm();if(unlocked&&tab=='o')loadOrders();if(unlocked&&tab=='n'&&NADM===null)nLoad()});
+storeReady.then(()=>drawAdm());
+boot('admin',()=>{setTitle(t('adm'));drawAdm()});
