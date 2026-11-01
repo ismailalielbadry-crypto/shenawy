@@ -180,3 +180,10 @@ a.pni:hover{background:var(--card)}.pni.un{background:var(--card)}
 .bkb{display:inline-flex;align-items:center;gap:4px;min-height:40px;padding:0 12px 0 8px;padding-inline:8px 14px;border-radius:20px;font-size:14px;font-weight:600;color:var(--fg);transition:background .15s}
 .bkb:hover{background:var(--card)}.bkb:active{transform:scale(.97)}
 html[dir=rtl] .bkb svg{transform:scaleX(-1)}
+
+/* v19: scroll must work from anywhere, including on top of product images */
+html,body{touch-action:pan-x pan-y pinch-zoom}
+.p,.p a.pl,.ph,.ph img,.ph svg,.tile{touch-action:pan-y pinch-zoom;overflow-y:visible;overscroll-behavior:auto}
+.ph{overflow:hidden}
+.p a.pl{overflow:visible;-webkit-touch-callout:none;-webkit-user-drag:none}
+.ph img{-webkit-user-drag:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
