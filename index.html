@@ -37,7 +37,7 @@ var w=document.getElementById('iw'),t='EL SHENAWY',n=0;
 for(var k=0;k<t.length;k++){var c=t[k],i=document.createElement('i');if(c==' ')i.className='sp';else i.textContent=c;i.style.setProperty('--n',n++);w.appendChild(i)}
 document.documentElement.style.overflow='hidden';var done=0;
 function end(){if(done)return;done=1;try{sessionStorage.setItem('introSeen','1')}catch(e){}el.classList.add('out');document.documentElement.style.overflow='';setTimeout(function(){el.remove()},1000)}
-el.addEventListener('click',end);setTimeout(end,3600);
+el.addEventListener('click',end);['touchstart','wheel','keydown'].forEach(function(ev){addEventListener(ev,end,{passive:true,once:true})});setTimeout(end,3600);
 })();
 </script>
 </body></html>
