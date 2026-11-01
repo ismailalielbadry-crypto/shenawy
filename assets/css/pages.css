@@ -139,8 +139,6 @@ main.pgm,.pgm{padding-bottom:24px}
 .sd a.sr{text-decoration:none;color:inherit}
 
 /* ===== لوحات جانبية + صندوق الإشعارات ===== */
-/* بدون قفل لسكرول الصفحة (بيعلّق على بعض متصفحات الموبايل): نمنع السحب على الخلفية بس */
-.ov.on{touch-action:none}.sdr,.mod,.pop{overscroll-behavior:contain}
 .sdr{display:flex;flex-direction:column;padding:0!important;width:min(92vw,420px);box-shadow:0 0 40px rgba(0,0,0,.28);overflow:hidden}
 #cartdr,#favdr{inset-inline-end:0;transform:translateX(102%)}
 html[dir=rtl] #cartdr,html[dir=rtl] #favdr{transform:translateX(-102%)}
