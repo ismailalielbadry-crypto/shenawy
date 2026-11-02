@@ -1,10 +1,10 @@
 /* صفحة تتبع الطلب */
-function timeline(s){if(s=='cancelled')return `<div class="hint" style="color:#b3282d">${cst(s)}</div>`;const st=['new','confirmed','shipped','delivered'],ix=Math.max(0,st.indexOf(s));
+function timeline(s){if(s=='cancelled'||s=='returned')return `<div class="hint" style="color:#b3282d">${cst(s)}</div>`;const st=['new','confirmed','shipped','delivered'],ix=Math.max(0,st.indexOf(s));
 return `<div class="tl">${st.map((x,i)=>`<div class="${i<=ix?'on':''}"><i>${i<ix?'✓':i+1}</i><span>${cst(x)}</span></div>`).join('')}</div>`}
 async function trackGo(){const id=($('#tid').value||'').trim().toUpperCase(),p4=($('#tp4').value||'').replace(/\D/g,'');const out=$('#tr');
 if(!id)return toast(L2('اكتب رقم الطلب','Enter order number'));if(!db)return toast('...');out.innerHTML='<p class="mut">...</p>';
 try{const d=await db.collection('track').doc(id).get();if(!d.exists||(d.data().p4&&p4!=d.data().p4)){out.innerHTML=`<p class="hint">${L2('مالقيناش طلب بالبيانات دي. اتأكد من الرقم وآخر 4 أرقام من الموبايل.','No order found. Check the number and last 4 digits.')}</p>`;return}
-const o=d.data();out.innerHTML=`<p style="margin:14px 0 4px"><b>${esc(o.id)}</b> <small class="mut">${fmtD(o.t)}</small></p>${timeline(o.status)}<div class="mut" style="font-size:14px">${(o.items||[]).map(i=>`${esc(iname(i))} ×${esc(i.qty)}`).join('<br>')}</div><p><b>${L2('الإجمالي','Total')}: ${money(o.total||0)}</b> · ${esc(o.gov||'')}</p>`}
+const o=d.data();out.innerHTML=`<p style="margin:14px 0 4px"><b>${esc(o.id)}</b> <small class="mut">${fmtD(o.t)}</small></p>${timeline(o.status)}${o.u?`<p class="mut" style="font-size:13px;margin:6px 0">${L2('آخر تحديث','Last update')}: ${fmtD(o.u)}</p>`:''}<div class="mut" style="font-size:14px">${(o.items||[]).map(i=>`${esc(iname(i))} ×${esc(i.qty)}`).join('<br>')}</div><p><b>${L2('الإجمالي','Total')}: ${money(o.total||0)}</b> · ${esc(o.gov||'')}</p>`}
 catch(e){out.innerHTML=`<p class="hint">${L2('تعذر التتبع الآن، جرّب بعد شوية.','Could not look up now.')}</p>`}}
 function trkDraw(){
 setTitle(L2('تتبع طلبك','Track your order'));

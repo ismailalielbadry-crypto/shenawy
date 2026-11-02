@@ -3,6 +3,17 @@ const PID=+new URLSearchParams(location.search).get('id');
 let cur=null,sel=null,added=false;
 function initSel(){const cs=list(cur.cl),ss=list(cur.sz),ac=cs.filter(c=>!outC(cur,c)),as=ss.filter(s=>!outS(cur,s));
 sel={c:ac[0]||cs[0],s:(ss[1]&&!outS(cur,ss[1]))?ss[1]:(as[0]||ss[0]),q:1,i:0}}
+
+function pdSEO(p,im,out){try{
+const abs=u=>{try{return new URL(u,location.href).href}catch(e){return u}},url=location.origin+location.pathname.replace(/[^\/]*$/,'')+'product.html?id='+p.id,
+img=im.length?im.map(abs):[abs('assets/img/og.png')],name=tr(p.n),desc=name+' — '+cname(p.c)+' | El Shenawy Mens Wear. '+L2('الدفع عند الاستلام وشحن لكل محافظات مصر.','Cash on delivery, shipping across Egypt.');
+const setM=(sel,attr,v)=>{let m=document.head.querySelector(sel);if(!m){m=document.createElement('meta');const k=sel.match(/\[(\w+)="([^"]+)"\]/);m.setAttribute(k[1],k[2]);document.head.appendChild(m)}m.setAttribute(attr,v)};
+setM('meta[name="description"]','content',desc);setM('meta[property="og:title"]','content',name+' | El Shenawy Mens Wear');setM('meta[property="og:description"]','content',desc);setM('meta[property="og:image"]','content',img[0]);setM('meta[property="og:url"]','content',url);setM('meta[property="og:type"]','content','product');setM('meta[name="twitter:image"]','content',img[0]);
+let cn=document.head.querySelector('link[rel="canonical"]');if(!cn){cn=document.createElement('link');cn.rel='canonical';document.head.appendChild(cn)}cn.href=url;
+const ld={'@context':'https://schema.org','@type':'Product','name':name,'description':desc,'image':img,'sku':String(p.id),'category':cname(p.c),'brand':{'@type':'Brand','name':'El Shenawy Mens Wear'},
+'offers':{'@type':'Offer','url':url,'priceCurrency':'EGP','price':String(Math.round(price(p)*100)/100),'itemCondition':'https://schema.org/NewCondition','availability':out?'https://schema.org/OutOfStock':'https://schema.org/InStock','seller':{'@type':'Organization','name':'El Shenawy Mens Wear'}}};
+let sc=document.getElementById('ld-product');if(!sc){sc=document.createElement('script');sc.type='application/ld+json';sc.id='ld-product';document.head.appendChild(sc)}sc.textContent=JSON.stringify(ld);
+}catch(e){}}
 function pdDraw(){
 cur=S.prods.find(p=>p.id==PID&&!p.hide);
 const root=$('#pd');
@@ -10,6 +21,7 @@ if(!cur){setTitle(L2('منتج غير موجود','Product not found'));root.inn
 if(!sel||sel.pid!==cur.id){initSel();sel.pid=cur.id;added=false}
 const p=cur,im=p.imgs||[],out=isOut(p);
 setTitle(tr(p.n));
+pdSEO(p,im,out);
 const rel=vis().filter(x=>x.id!=p.id&&x.c==p.c).slice(0,4);
 const more=rel.length?rel:vis().filter(x=>x.id!=p.id).slice(0,4);
 root.innerHTML=`<nav class="crumbs" aria-label="breadcrumb"><a href="index.html">${L2('الرئيسية','Home')}</a><span>/</span><a href="shop.html">${L2('المتجر','Shop')}</a><span>/</span><a href="shop.html?cat=${encodeURIComponent(p.c)}">${esc(cname(p.c))}</a></nav>
@@ -24,6 +36,7 @@ ${out?`<button class="btn dark" disabled style="opacity:.4">${t('so')}</button>`
 <div class="addok${added?' on':''}" role="status"><span>✓ ${t('added')}</span><a href="cart.html">${L2('عرض السلة','View cart')} ←</a></div>
 <div class="tb"><div><b>💵 ${L2('الدفع عند الاستلام','Cash on delivery')}</b><small>${L2('افحص الطلب قبل ما تدفع','Inspect before you pay')}</small></div><div><b>🚚 ${L2('شحن لكل مصر','Shipping across Egypt')}</b><small>${L2('لكل المحافظات','All governorates')}</small></div><div><b>🔁 ${L2('استبدال واسترجاع','Exchange & returns')}</b><small>${L2('حسب السياسة','See policy')}</small></div></div>
 <a class="lnk" href="policies.html#ret">${L2('تفاصيل الاستبدال والشحن','Exchange & shipping details')}</a></div></div>
+${out?'':pairHtml(p,3)}
 ${more.length?`<section class="sect"><div class="sh2"><h2>${rel.length?L2('منتجات مشابهة','You may also like'):L2('اكتشف المزيد','Discover more')}</h2><a href="shop.html">${L2('عرض الكل','View all')}</a></div><div class="grid in">${more.map(card).join('')}</div></section>`:''}`}
 boot('shop',pdDraw);
 window.onFavChange=()=>{};

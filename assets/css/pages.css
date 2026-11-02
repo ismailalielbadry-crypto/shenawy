@@ -187,3 +187,34 @@ html,body{touch-action:pan-x pan-y pinch-zoom}
 .ph{overflow:hidden}
 .p a.pl{overflow:visible;-webkit-touch-callout:none;-webkit-user-drag:none}
 .ph img{-webkit-user-drag:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+
+/* v20: تبويب التقارير + سجل حالة الطلب */
+#adm .tabs{overflow-x:auto}#adm .tabs button{white-space:nowrap;flex:1 0 auto;padding-inline:14px}
+.oh2{display:flex;flex-wrap:wrap;gap:4px;font-size:11px;color:var(--mut)}.oh2 span{background:var(--card);border-radius:10px;padding:2px 8px}
+#rptwrap{max-width:960px;margin-inline:auto}
+.rpd{padding:0 14px 10px;display:grid;gap:8px;grid-template-columns:1fr 1fr}.rpd label{font-size:13px;color:var(--mut);display:grid;gap:4px}.rpd label:only-child{grid-column:1/-1}
+.rpd.rps{display:flex;flex-wrap:wrap;gap:6px}
+.rpt{margin:18px 14px 8px;font-size:16px}
+.rbars{padding:0 14px;display:grid;gap:8px}
+.rb{display:grid;grid-template-columns:minmax(80px,32%) 1fr auto;align-items:center;gap:8px;font-size:13px}
+.rb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rb span em{font-style:normal;font-weight:700;color:var(--red);margin-inline-end:4px}
+.rb i{display:block;height:10px;background:var(--card);border-radius:5px;overflow:hidden}.rb i u{display:block;height:100%;background:var(--red);border-radius:5px;text-decoration:none}
+.rb b{font-size:12px;white-space:nowrap;text-align:end}.rb b small{font-weight:400;color:var(--mut)}
+.rbp{grid-template-columns:minmax(110px,40%) 1fr auto}
+.rpx{width:auto;padding:8px 14px;margin-top:8px;border:1px solid var(--line)}
+.rpe{padding:18px 14px 8px;display:grid;gap:8px}@media(min-width:640px){.rpe{grid-template-columns:repeat(3,1fr)}}
+.rph{display:none;padding:0 14px}
+.rrs{font-size:13px;background:#f3e8ff;color:#6b21a8;padding:6px 10px;border-radius:8px}
+.rrl{display:grid;gap:8px;padding:10px 14px 0}.rrw{border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;gap:5px;font-size:14px}
+@media print{body.prt-rep .rrs{-webkit-print-color-adjust:exact;print-color-adjust:exact}body.prt-rep .rrw{break-inside:avoid}}
+@media print{
+  body.prt-rep>*:not(#adm){display:none!important}
+  body.prt-rep #adm>*:not(#rptwrap){display:none!important}
+  body.prt-rep #rptwrap .ofl,body.prt-rep #rptwrap .rpd:not(.rps),body.prt-rep #rptwrap .rpe,body.prt-rep #rptwrap .rpx{display:none!important}
+  body.prt-rep .rph{display:block;margin:0 0 10px;font-size:13px}
+  body.prt-rep{background:#fff;color:#000}
+  body.prt-rep .rb i u{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body.prt-rep .sc{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+/* كوبون الخصم */
+.cpn{margin:10px 0}.cpr{display:flex;gap:8px}.cpr input{flex:1;min-width:0;text-transform:uppercase}.cpr .btn{width:auto;padding:8px 16px;margin:0}.cpe{color:#b3282d}.cpo{color:#1a7f37}

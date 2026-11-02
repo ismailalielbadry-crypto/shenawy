@@ -1,7 +1,7 @@
 /* صفحة الإشعارات */
 const SEEN0=nfReadSet();           /* اللي كان مقروء قبل فتح الصفحة، علشان نبرز الجديد */
 const NF_FIRST=LS.get('es_nfirst',0);
-const nfIcon=n=>n.kind=='order'?({new:'🧾',confirmed:'✅',shipped:'🚚',delivered:'📦',cancelled:'✖️'}[n.st]||'🔔'):'📣';
+const nfIcon=n=>n.kind=='order'?({new:'🧾',confirmed:'✅',shipped:'🚚',delivered:'📦',cancelled:'✖️',returned:'↩️'}[n.st]||'🔔'):n.kind=='cart'?'🛒':'📣';
 const nfWhen=t=>{try{return new Date(t).toLocaleString(lang=='ar'?'ar-EG':'en-GB',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}catch(e){return''}};
 function nfDraw(){
 setTitle(L2('الإشعارات','Notifications'));

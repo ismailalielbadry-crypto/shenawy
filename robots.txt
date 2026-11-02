@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /cart.html
+Disallow: /account.html
+Disallow: /track.html
+Disallow: /thanks.html
+Disallow: /notifications.html
+Disallow: /wishlist.html
+
+Sitemap: https://YOUR-DOMAIN.com/sitemap.xml
