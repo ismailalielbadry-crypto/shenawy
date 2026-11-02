@@ -52,14 +52,26 @@ function couponCheck(code,base){code=String(code||'').trim().toUpperCase();if(!c
 if(!c)return{ok:false,err:'cpnbad'};if(c.ex&&Date.now()>c.ex)return{ok:false,err:'cpnexp'};if(base<c.min)return{ok:false,err:'cpnmin',need:c.min-base};
 return{ok:true,c,disc:Math.min(base,Math.round(c.pc?base*Math.min(c.v,100)/100:c.v))}}
 function setCoupon(code){CPN=String(code||'').trim().toUpperCase();LS.set('es_cpn',CPN)}
-function totals(){const L=cart.map(i=>({i,p:P(i)})).filter(x=>x.p),u=[];
-L.forEach(x=>{for(let k=0;k<x.i.q;k++)u.push(price(x.p))});
+/* ---------- عرض اشتري X وخد Y هدية: كله بيتحكم فيه من الأدمن ---------- */
+function b2gN(){return Math.max(1,Math.floor(+S.cfg.b2gBuy)||2)}
+function b2gGet(){return Math.max(1,Math.floor(+S.cfg.b2gGet)||1)}
+function b2gCatList(){return String(S.cfg.b2gCats||'').split(',').map(x=>x.trim()).filter(Boolean)}
+function b2gEl(p){const c=b2gCatList();return !c.length||c.includes(p.c)}
+function b2gOn(){const c=S.cfg;if(!c.b2g1)return false;const d=v=>{const m=/^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(String(v||'').trim());return m?new Date(+m[1],m[2]-1,+m[3]).getTime():0},a=d(c.b2gFrom),z=d(c.b2gTo),n=Date.now();if(a&&n<a)return false;if(z&&n>z+86399999)return false;return true}
+function b2gNeed(n){const G=b2gN()+b2gGet();return G-n%G}
+function b2gTitle(){return L2('اشتري '+b2gN()+' وخد '+b2gGet()+' هدية','Buy '+b2gN()+' get '+b2gGet()+' free')}
+function b2gGiftLbl(){return L2('قطعة هدية ('+b2gTitle()+')','Free item ('+b2gTitle()+')')}
+function arPcs(n){return n==1?'قطعة':n==2?'قطعتين':n<=10?n+' قطع':n+' قطعة'}
+function b2gHint(){const g=b2gGet();return L2('ضيف قطعة كمان وخد '+(g==1?'الأرخص':arPcs(g)+' (الأرخص)')+' هدية','Add one more item and get the '+(g==1?'cheapest one':g+' cheapest')+' free')}
+function b2gCartEU(){return cart.reduce((a,i)=>{const q=P(i);return a+(q&&b2gEl(q)?i.q:0)},0)}
+function totals(){const L=cart.map(i=>({i,p:P(i)})).filter(x=>x.p),u=[],ue=[];
+L.forEach(x=>{for(let k=0;k<x.i.q;k++){const pr=price(x.p);u.push(pr);if(b2gEl(x.p))ue.push(pr)}});
 const sub=L.reduce((a,x)=>a+price(x.p)*x.i.q,0);let free=0;
-if(S.cfg.b2g1){u.sort((a,b)=>b-a);for(let k=2;k<u.length;k+=3)free+=u[k]}
+if(b2gOn()&&sub>=(+S.cfg.b2gMin||0)){const N=b2gN(),G=N+b2gGet();ue.sort((a,b)=>b-a);for(let g=0;g+G<=ue.length;g+=G)for(let k=g+N;k<g+G;k++)free+=ue[k]}
 const after=sub-free;let ship=null;
 if(cust.g>=0&&GOV[cust.g]){const z=S.cfg.zones[GOV[cust.g][2]];ship=(+S.cfg.free>0&&after>=+S.cfg.free)?0:(+(z&&z.p)||0)}
 const cp=couponCheck(CPN,after),disc=cp.ok?cp.disc:0;
-return{L,sub,free,units:u.length,after,ship,disc,cpn:cp.ok?cp.c.code:'',cerr:CPN&&!cp.ok?cp:null,total:after-disc+(ship||0)}}
+return{L,sub,free,units:u.length,eu:ue.length,after,ship,disc,cpn:cp.ok?cp.c.code:'',cerr:CPN&&!cp.ok?cp:null,total:after-disc+(ship||0)}}
 function addToCart(p,col,size,q){const k=cart.find(i=>i.id==p.id&&i.col==col&&i.size==size);k?k.q+=q:cart.push({id:p.id,col,size,q});cartSave();track('AddToCart',{value:Math.round(price(p)*q),currency:'EGP'})}
 /* ---------- اشتري معاه: منتجات مقترحة بتكمّل القطعة وبتساعد عرض اشتري 2 وخد 1 ---------- */
 function defOpts(p){const cs=list(p.cl),ss=list(p.sz),ac=cs.filter(c=>!outC(p,c)),as=ss.filter(x=>!outS(p,x));return{c:ac[0]||cs[0]||'',s:(ss[1]&&!outS(p,ss[1]))?ss[1]:(as[0]||ss[0]||'')}}
@@ -68,11 +80,11 @@ let L=vis().filter(p=>!isOut(p)&&!inCart.has(+p.id));
 /* المنتجات من قسم مختلف الأول (بتكمّل الإطلالة)، وبعدين الباقي */
 L.sort((a,b)=>(cats.has(a.c)?1:0)-(cats.has(b.c)?1:0));
 /* لو ناقص قطعة واحدة على العرض، نرتب الأرخص الأول عشان تبقى هي الهدية */
-const units=cartCount()+(anchor?(typeof sel!='undefined'&&sel?sel.q:1):0);
-if(S.cfg.b2g1&&units%3==2){const g=x=>cats.has(x.c)?1:0;L.sort((a,b)=>g(a)-g(b)||price(a)-price(b))}
+const units=b2gCartEU()+(anchor&&b2gEl(anchor)?(typeof sel!='undefined'&&sel?sel.q:1):0);
+if(b2gOn()&&b2gNeed(units)==1){const g=x=>cats.has(x.c)?1:0;L.sort((a,b)=>(b2gEl(b)?1:0)-(b2gEl(a)?1:0)||g(a)-g(b)||price(a)-price(b))}
 return L.slice(0,n)}
-function pairHtml(anchor,n){const L=pairPicks(anchor,n||3);if(!L.length)return'';const units=cartCount()+(anchor?(typeof sel!='undefined'&&sel?sel.q:1):0);
-let note='';if(S.cfg.b2g1){const m=units%3;note=m==2?L2('🎁 قطعة كمان وتاخد الأرخص هدية','🎁 One more item and the cheapest is free'):m==1?L2('🎁 اشتري 2 وخد 1 هدية: ضيف قطعتين كمان','🎁 Buy 2 get 1 free: add two more'):L2('🎁 اشتري 2 وخد 1 هدية','🎁 Buy 2 get 1 free')}
+function pairHtml(anchor,n){const L=pairPicks(anchor,n||3);if(!L.length)return'';const units=b2gCartEU()+(anchor&&b2gEl(anchor)?(typeof sel!='undefined'&&sel?sel.q:1):0);
+let note='';if(b2gOn()){const need=b2gNeed(units),gt=b2gGet(),G=b2gN()+gt;note=units%G==0?'🎁 '+b2gTitle():need==1?'🎁 '+b2gHint():L2('🎁 ضيف '+arPcs(need)+' كمان وخد '+gt+' هدية','🎁 Add '+need+' more and get '+gt+' free')}
 return `<section class="pw"><div class="pwh"><h3>${L2('اشتري معاه','Buy it with')}</h3>${note?`<small>${note}</small>`:''}</div><div class="pwl">${L.map(p=>{const o=defOpts(p);return `<div class="pwi"><a href="product.html?id=${p.id}">${ph(p,o.c)}</a><div class="pwb"><a href="product.html?id=${p.id}"><b>${esc(tr(p.n))}</b></a><small>${esc(o.c)}${o.c&&o.s?' / ':''}${esc(o.s)}</small><span>${pr(p)}</span></div><button class="btn dark" data-ub="${p.id}" aria-label="${L2('أضف للسلة','Add to cart')}">+ ${L2('أضف','Add')}</button></div>`}).join('')}</div></section>`}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-ub]');if(!b)return;e.preventDefault();const p=S.prods.find(x=>x.id==b.dataset.ub);if(!p||isOut(p))return;const o=defOpts(p);addToCart(p,o.c,o.s,1);toast('✓ '+t('added'));
 if(typeof cartDraw=='function')cartDraw();else if(typeof pdDraw=='function')pdDraw()});
@@ -279,9 +291,9 @@ function cartDrHtml(){const T=totals();
 if(!T.L.length)return drHead(t('cart'))+`<div class="db"><div class="dempty"><h3>${t('empty')}</h3><p>${L2('ضيف حاجة من المتجر وابدأ طلبك.','Add something from the shop to get started.')}</p><a class="btn dark" href="shop.html">${L2('تسوق الآن','Shop now')}</a></div></div>`;
 const items=T.L.map(({i,p})=>{const k=cart.indexOf(i);return `<div class="ci"><a href="product.html?id=${p.id}">${ph(p,i.col)}</a><div class="cib"><a href="product.html?id=${p.id}"><b>${esc(tr(p.n))}</b></a><small>${esc(i.col||'')}${i.col&&i.size?' / ':''}${esc(i.size||'')}</small><div class="cir"><div class="qb"><button data-dq="${k}|-1" aria-label="-">−</button><span>${i.q}</span><button data-dq="${k}|1" aria-label="+">+</button></div><span class="cip">${money(price(p)*i.q)}</span></div></div><button class="rmx" data-drm="${k}" aria-label="${L2('حذف','Remove')}">×</button></div>`}).join('');
 let h='';
-if(S.cfg.b2g1&&T.units%3==2)h+=`<div class="hint">${t('hint21')}</div>`;
+if(b2gOn()&&T.eu>0&&b2gNeed(T.eu)==1)h+=`<div class="hint">${b2gHint()}</div>`;
 if(+S.cfg.free>0&&T.after<+S.cfg.free)h+=`<div class="hint">${t('hintfree').replace('{x}',money(+S.cfg.free-T.after))}</div>`;
-return drHead(t('cart'),cartCount()+' '+L2('قطعة','items'))+`<div class="db">${items}${pairHtml(null,2)}</div><div class="df">${h}<div class="row2"><span>${t('sub')}</span><span>${money(T.sub)}</span></div>${T.free?`<div class="row2 gr"><span>${t('gift')}</span><span>-${money(T.free)}</span></div>`:''}${T.disc?`<div class="row2 gr"><span>${t('cpnd')} ${esc(T.cpn)}</span><span>-${money(T.disc)}</span></div>`:''}<div class="row2 tt"><b>${t('total')}</b><b>${money(T.after-T.disc)}</b></div><small>${L2('الشحن بيتحسب في الخطوة الجاية حسب المحافظة.','Shipping is calculated at checkout.')}</small><a class="btn dark red" href="cart.html">${L2('إتمام الطلب','Checkout')}</a></div>`}
+return drHead(t('cart'),cartCount()+' '+L2('قطعة','items'))+`<div class="db">${items}${pairHtml(null,2)}</div><div class="df">${h}<div class="row2"><span>${t('sub')}</span><span>${money(T.sub)}</span></div>${T.free?`<div class="row2 gr"><span>${b2gGiftLbl()}</span><span>-${money(T.free)}</span></div>`:''}${T.disc?`<div class="row2 gr"><span>${t('cpnd')} ${esc(T.cpn)}</span><span>-${money(T.disc)}</span></div>`:''}<div class="row2 tt"><b>${t('total')}</b><b>${money(T.after-T.disc)}</b></div><small>${L2('الشحن بيتحسب في الخطوة الجاية حسب المحافظة.','Shipping is calculated at checkout.')}</small><a class="btn dark red" href="cart.html">${L2('إتمام الطلب','Checkout')}</a></div>`}
 
 function favDrHtml(){const ps=FAV.map(i=>S.prods.find(p=>p.id==i)).filter(p=>p&&!p.hide);
 if(!ps.length)return drHead(L2('المفضلة','Wishlist'))+`<div class="db"><div class="dempty"><h3>${L2('لسه ما حفظتش حاجة','Nothing saved yet')}</h3><p>${L2('اضغط على القلب في أي منتج وهيتحفظ هنا.','Tap the heart on any product to save it here.')}</p><a class="btn dark" href="shop.html">${L2('تصفح المتجر','Browse the shop')}</a></div></div>`;

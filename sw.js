@@ -1,5 +1,5 @@
 /* El Shenawy — service worker: تنبيهات + كاش للصور والصفحات (PWA) */
-const VER='v28';
+const VER='v29';
 const SHELL='es-shell-'+VER, IMG='es-img-'+VER;
 const IMG_MAX=120;
 const PAGES=['index.html','shop.html','product.html','cart.html','track.html','account.html','wishlist.html','notifications.html','policies.html','size-guide.html','thanks.html'];
